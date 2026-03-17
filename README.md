@@ -49,8 +49,8 @@ pip install torch triton
 ### 1. 克隆仓库
 
 ```bash
-git clone https://github.com/your-username/flash-attention-triton.git
-cd flash-attention-triton
+git clone https://github.com/QingQingS/flash-attention-from-scratch.git
+cd flash-attention-from-scratch
 ```
 
 ### 2. 运行 Benchmark
