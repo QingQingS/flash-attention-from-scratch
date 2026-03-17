@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "timestamp": "2026-03-17T20:44:25.314029",
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 5090",
+      "memory_gb": 33.67,
+      "cuda": "12.8",
+      "torch": "2.8.0+cu128"
+    },
+    "config": {
+      "batch_size": 1,
+      "seq_len": [
+        512,
+        1024,
+        2048,
+        4096,
+        16384
+      ],
+      "dim": 1024,
+      "num_heads": 16,
+      "warmup": 5,
+      "runs": 20,
+      "dtype": "fp16",
+      "out": "results"
+    }
+  },
+  "results": [
+    {
+      "seq_len": 512,
+      "naive_latency_ms": 0.05161439999938011,
+      "sdpa_latency_ms": 0.0305311999283731,
+      "flash_latency_ms": 0.07412320077419281,
+      "naive_mem_extra": 17.0,
+      "sdpa_mem_extra": 5.0947265625,
+      "flash_mem_extra": 2.03125,
+      "naive_mem_peak": 30539776,
+      "sdpa_mem_peak": 18056192,
+      "flash_mem_peak": 14843904,
+      "flash_speedup_vs_naive": 0.6963325849435054,
+      "flash_speedup_vs_sdpa": 0.41189802395855296,
+      "naive_throughput_tokens_s": 9919712.328461614,
+      "sdpa_throughput_tokens_s": 16769730.67554383,
+      "flash_throughput_tokens_s": 6907418.927573633
+    },
+    {
+      "seq_len": 1024,
+      "naive_latency_ms": 0.10420639924705029,
+      "sdpa_latency_ms": 0.04900320004671812,
+      "flash_latency_ms": 0.08366239964962005,
+      "naive_mem_extra": 66.0,
+      "sdpa_mem_extra": 4.0,
+      "flash_mem_extra": 4.0625,
+      "naive_mem_peak": 86114304,
+      "sdpa_mem_peak": 21102592,
+      "flash_mem_peak": 21168128,
+      "flash_speedup_vs_naive": 1.2455583354466158,
+      "flash_speedup_vs_sdpa": 0.5857254902076032,
+      "naive_throughput_tokens_s": 9826651.792970246,
+      "sdpa_throughput_tokens_s": 20896594.488191593,
+      "flash_throughput_tokens_s": 12239668.050265523
+    },
+    {
+      "seq_len": 2048,
+      "naive_latency_ms": 0.6019327998161316,
+      "sdpa_latency_ms": 0.12099999859929085,
+      "flash_latency_ms": 0.17269440069794656,
+      "naive_mem_extra": 260.0,
+      "sdpa_mem_extra": 8.0,
+      "flash_mem_extra": 8.125,
+      "naive_mem_peak": 297926656,
+      "sdpa_mem_peak": 33685504,
+      "flash_mem_peak": 33816576,
+      "flash_speedup_vs_naive": 3.485537442924685,
+      "flash_speedup_vs_sdpa": 0.7006596514436361,
+      "naive_throughput_tokens_s": 3402373.1563151055,
+      "sdpa_throughput_tokens_s": 16925620.03064356,
+      "flash_throughput_tokens_s": 11859099.03113814
+    },
+    {
+      "seq_len": 4096,
+      "naive_latency_ms": 2.4218608260154726,
+      "sdpa_latency_ms": 0.4490911975502968,
+      "flash_latency_ms": 0.47788160145282743,
+      "naive_mem_extra": 1032.0,
+      "sdpa_mem_extra": 16.0,
+      "flash_mem_extra": 16.25,
+      "naive_mem_peak": 1124204544,
+      "sdpa_mem_peak": 58851328,
+      "flash_mem_peak": 59113472,
+      "flash_speedup_vs_naive": 5.067909747210762,
+      "flash_speedup_vs_sdpa": 0.939754106843612,
+      "naive_throughput_tokens_s": 1691261.5109840469,
+      "sdpa_throughput_tokens_s": 9120641.91492255,
+      "flash_throughput_tokens_s": 8571160.696598452
+    },
+    {
+      "seq_len": 16384,
+      "naive_latency_ms": 35.500640296936034,
+      "sdpa_latency_ms": 5.196300792694092,
+      "flash_latency_ms": 5.742507219314575,
+      "naive_mem_extra": 16416.0,
+      "sdpa_mem_extra": 64.0,
+      "flash_mem_extra": 65.0,
+      "naive_mem_peak": 17356161024,
+      "sdpa_mem_peak": 209846272,
+      "flash_mem_peak": 210894848,
+      "flash_speedup_vs_naive": 6.182080220557979,
+      "flash_speedup_vs_sdpa": 0.9048836325737039,
+      "naive_throughput_tokens_s": 461512.8026694792,
+      "sdpa_throughput_tokens_s": 3153012.239598527,
+      "flash_throughput_tokens_s": 2853109.168917265
+    }
+  ]
+}

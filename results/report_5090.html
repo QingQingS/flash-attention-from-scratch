@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Flash Attention Benchmark Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg:      #0d0f12;
+    --bg2:     #13161b;
+    --bg3:     #1a1e25;
+    --border:  rgba(255,255,255,0.07);
+    --text:    #d4d6db;
+    --muted:   #6b7280;
+    --red:     #e05252;
+    --blue:    #4e8ef7;
+    --green:   #3ecf6e;
+    --amber:   #f0a030;
+    --font:    'IBM Plex Sans', system-ui, sans-serif;
+    --mono:    'IBM Plex Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: flex-end;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .report-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  header h1 {
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: -.02em;
+    color: #f0f1f3;
+  }
+  header h1 span { color: var(--blue); font-weight: 500; }
+  .meta-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+  .pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    color: var(--muted);
+  }
+  .pill strong { color: var(--text); font-weight: 500; }
+
+  /* ── layout ── */
+  main { padding: 32px 40px 60px; max-width: 1280px; }
+
+  /* ── metric cards ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: rgba(255,255,255,0.15); }
+  .card-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 8px;
+  }
+  .card-value {
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: -.02em;
+  }
+  .card-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: var(--mono);
+  }
+  .c-red   { color: var(--red);   }
+  .c-blue  { color: var(--blue);  }
+  .c-green { color: var(--green); }
+  .c-amber { color: var(--amber); }
+
+  /* ── section ── */
+  .section { margin-bottom: 40px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 12px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── legend ── */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-family: var(--mono);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── charts ── */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 860px) { .chart-grid { grid-template-columns: 1fr; } }
+
+  .chart-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .chart-box-full {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .chart-box-label {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 12px;
+  }
+  .canvas-wrap { position: relative; width: 100%; }
+
+  /* ── table ── */
+  .tbl-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  thead th {
+    background: var(--bg3);
+    padding: 10px 16px;
+    text-align: right;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border-bottom: 1px solid var(--border);
+  }
+  thead th:first-child { text-align: left; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg3); }
+  tbody td {
+    padding: 9px 16px;
+    text-align: right;
+    color: var(--text);
+  }
+  tbody td:first-child { text-align: left; color: var(--muted); }
+  .best { color: var(--green); font-weight: 500; }
+  .worst { color: var(--red); }
+
+  /* ── footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 40px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="report-title">Benchmark Report</div>
+    <h1>Flash<span>Attention</span> — Performance Analysis</h1>
+  </div>
+  <div class="meta-pills">
+    <div class="pill"><strong>GPU</strong> NVIDIA GeForce RTX 5090</div>
+    <div class="pill"><strong>VRAM</strong> 33.67 GB</div>
+    <div class="pill"><strong>CUDA</strong> 12.8</div>
+    <div class="pill"><strong>PyTorch</strong> 2.8.0+cu128</div>
+    <div class="pill"><strong>dtype</strong> fp16</div>
+    <div class="pill"><strong>batch</strong> 1</div>
+    <div class="pill"><strong>heads</strong> 16</div>
+    <div class="pill"><strong>dim</strong> 1024</div>
+    <div class="pill"><strong>runs</strong> 20</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── Metric cards ── -->
+  <div class="cards">
+    <div class="card"><div class="card-label">max speedup vs naive</div><div class="card-value"><span class="c-blue">6.18×</span></div><div class="card-sub">at seq=16,384</div></div>
+    <div class="card"><div class="card-label">flash vs sdpa at peak</div><div class="card-value"><span class="c-red">0.905×</span></div><div class="card-sub">seq=16,384 · Flash slower</div></div>
+    <div class="card"><div class="card-label">flash mem at peak seq</div><div class="card-value"><span class="c-green">65 MB</span></div><div class="card-sub">naive 16416 MB · 253× reduction</div></div>
+    <div class="card"><div class="card-label">naive mem at peak seq</div><div class="card-value"><span class="c-red">16.0 GB</span></div><div class="card-sub">O(N²) attention score matrix</div></div>
+  </div>
+
+  <!-- ── Latency ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Latency (ms, log scale)</span>
+      <span class="section-line"></span>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#e05252"></span>Naive</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#4e8ef7"></span>SDPA (PyTorch)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#3ecf6e"></span>Flash Attention (Triton)</span>
+    </div>
+    <div class="chart-box-full">
+      <div class="canvas-wrap" style="height:260px"><canvas id="latChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ── Memory + Speedup ── -->
+  <div class="chart-grid section">
+    <div>
+      <div class="section-header">
+        <span class="section-title">Extra Memory (MB, log)</span>
+        <span class="section-line"></span>
+      </div>
+      <div class="chart-box">
+        <div class="canvas-wrap" style="height:240px"><canvas id="memChart"></canvas></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-header">
+        <span class="section-title">Flash Speedup Ratio</span>
+        <span class="section-line"></span>
+      </div>
+      <div class="chart-box">
+        <div class="canvas-wrap" style="height:240px"><canvas id="speedChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Throughput ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Throughput (G tokens/s)</span>
+      <span class="section-line"></span>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#e05252"></span>Naive</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#4e8ef7"></span>SDPA</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#3ecf6e"></span>Flash (Triton)</span>
+    </div>
+    <div class="chart-box-full">
+      <div class="canvas-wrap" style="height:220px"><canvas id="tputChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ── Raw Data Table ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Raw Results</span>
+      <span class="section-line"></span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>seq_len</th>
+            <th>naive (ms)</th>
+            <th>SDPA (ms)</th>
+            <th>Flash (ms)</th>
+            <th>naive mem (MB)</th>
+            <th>SDPA mem (MB)</th>
+            <th>flash mem (MB)</th>
+            <th>×naive</th>
+            <th>×SDPA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>512</td><td>0.05161</td><td class="best">0.03053</td><td class="worst">0.07412</td><td>17.00</td><td>5.09</td><td>2.03</td><td class="worst">0.696</td><td class="worst">0.412</td></tr>
+          <tr><td>1,024</td><td class="worst">0.10421</td><td class="best">0.04900</td><td>0.08366</td><td>66.00</td><td>4.00</td><td>4.06</td><td class="best">1.246</td><td class="worst">0.586</td></tr>
+          <tr><td>2,048</td><td class="worst">0.60193</td><td class="best">0.12100</td><td>0.17269</td><td>260.00</td><td>8.00</td><td>8.12</td><td class="best">3.486</td><td class="worst">0.701</td></tr>
+          <tr><td>4,096</td><td class="worst">2.42186</td><td class="best">0.44909</td><td>0.47788</td><td>1032.00</td><td>16.00</td><td>16.25</td><td class="best">5.068</td><td class="worst">0.940</td></tr>
+          <tr><td>16,384</td><td class="worst">35.50064</td><td class="best">5.19630</td><td>5.74251</td><td>16416.00</td><td>64.00</td><td>65.00</td><td class="best">6.182</td><td class="worst">0.905</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <span>Generated 2026-03-17 20:45:17</span>
+  <span>plot_benchmark.py · Chart.js 4.4.1</span>
+</footer>
+
+<script>
+const DATA = {"seq_lens": [512, 1024, 2048, 4096, 16384], "naive_lat_ms": [0.05161439999938011, 0.10420639924705029, 0.6019327998161316, 2.4218608260154726, 35.500640296936034], "sdpa_lat_ms": [0.0305311999283731, 0.04900320004671812, 0.12099999859929085, 0.4490911975502968, 5.196300792694092], "flash_lat_ms": [0.07412320077419281, 0.08366239964962005, 0.17269440069794656, 0.47788160145282743, 5.742507219314575], "naive_mem": [17.0, 66.0, 260.0, 1032.0, 16416.0], "sdpa_mem": [5.0947265625, 4.0, 8.0, 16.0, 64.0], "flash_mem": [2.03125, 4.0625, 8.125, 16.25, 65.0], "speed_vs_naive": [0.6963325849435054, 1.2455583354466158, 3.485537442924685, 5.067909747210762, 6.182080220557979], "speed_vs_sdpa": [0.41189802395855296, 0.5857254902076032, 0.7006596514436361, 0.939754106843612, 0.9048836325737039], "naive_tput": [0.009919712328461613, 0.009826651792970246, 0.0034023731563151056, 0.0016912615109840469, 0.00046151280266947925], "sdpa_tput": [0.01676973067554383, 0.020896594488191592, 0.01692562003064356, 0.00912064191492255, 0.003153012239598527], "flash_tput": [0.006907418927573634, 0.012239668050265523, 0.01185909903113814, 0.008571160696598452, 0.0028531091689172647]};
+
+const GRID  = 'rgba(255,255,255,0.05)';
+const TICK  = '#6b7280';
+const baseOpts = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { ticks: { color: TICK, font: { family: "'IBM Plex Mono'" } }, grid: { color: GRID } },
+    y: { ticks: { color: TICK, font: { family: "'IBM Plex Mono'" } }, grid: { color: GRID } },
+  }
+};
+
+// ── Latency ──
+new Chart(document.getElementById('latChart'), {
+  type: 'line',
+  data: {
+    labels: DATA.seq_lens,
+    datasets: [
+      { label: 'Naive', data: DATA.naive_lat_ms, borderColor: '#e05252', backgroundColor: 'rgba(224,82,82,0.08)',  tension: 0.3, fill: true, pointRadius: 5, pointHoverRadius: 7 },
+      { label: 'SDPA',  data: DATA.sdpa_lat_ms,  borderColor: '#4e8ef7', backgroundColor: 'rgba(78,142,247,0.08)', tension: 0.3, fill: true, pointRadius: 5, pointHoverRadius: 7 },
+      { label: 'Flash', data: DATA.flash_lat_ms, borderColor: '#3ecf6e', backgroundColor: 'rgba(62,207,110,0.08)', tension: 0.3, fill: true, pointRadius: 5, pointHoverRadius: 7 },
+    ]
+  },
+  options: {
+    ...baseOpts,
+    scales: {
+      x: { ...baseOpts.scales.x, title: { display: true, text: 'sequence length', color: TICK, font: { family: "'IBM Plex Mono'", size: 11 } } },
+      y: { ...baseOpts.scales.y, type: 'logarithmic', title: { display: true, text: 'ms (log)', color: TICK, font: { family: "'IBM Plex Mono'", size: 11 } } },
+    }
+  }
+});
+
+// ── Memory ──
+new Chart(document.getElementById('memChart'), {
+  type: 'bar',
+  data: {
+    labels: DATA.seq_lens,
+    datasets: [
+      { label: 'Naive', data: DATA.naive_mem, backgroundColor: 'rgba(224,82,82,0.7)',  borderRadius: 3 },
+      { label: 'SDPA',  data: DATA.sdpa_mem,  backgroundColor: 'rgba(78,142,247,0.7)', borderRadius: 3 },
+      { label: 'Flash', data: DATA.flash_mem, backgroundColor: 'rgba(62,207,110,0.7)', borderRadius: 3 },
+    ]
+  },
+  options: {
+    ...baseOpts,
+    scales: {
+      x: { ...baseOpts.scales.x },
+      y: { ...baseOpts.scales.y, type: 'logarithmic', title: { display: true, text: 'MB (log)', color: TICK, font: { family: "'IBM Plex Mono'", size: 11 } } },
+    }
+  }
+});
+
+// ── Speedup ──
+new Chart(document.getElementById('speedChart'), {
+  type: 'bar',
+  data: {
+    labels: DATA.seq_lens,
+    datasets: [
+      { label: '×naive', data: DATA.speed_vs_naive, backgroundColor: 'rgba(78,142,247,0.75)', borderRadius: 3 },
+      { label: '×SDPA',  data: DATA.speed_vs_sdpa,  backgroundColor: 'rgba(240,160,48,0.75)', borderRadius: 3 },
+    ]
+  },
+  options: {
+    ...baseOpts,
+    scales: {
+      x: { ...baseOpts.scales.x },
+      y: {
+        ...baseOpts.scales.y,
+        title: { display: true, text: 'speedup ×', color: TICK, font: { family: "'IBM Plex Mono'", size: 11 } },
+        min: 0,
+      }
+    },
+    plugins: {
+      ...baseOpts.plugins,
+      annotation: {},
+    }
+  }
+});
+
+// ── Throughput ──
+new Chart(document.getElementById('tputChart'), {
+  type: 'bar',
+  data: {
+    labels: DATA.seq_lens,
+    datasets: [
+      { label: 'Naive', data: DATA.naive_tput, backgroundColor: 'rgba(224,82,82,0.7)',  borderRadius: 3 },
+      { label: 'SDPA',  data: DATA.sdpa_tput,  backgroundColor: 'rgba(78,142,247,0.7)', borderRadius: 3 },
+      { label: 'Flash', data: DATA.flash_tput, backgroundColor: 'rgba(62,207,110,0.7)', borderRadius: 3 },
+    ]
+  },
+  options: {
+    ...baseOpts,
+    scales: {
+      x: { ...baseOpts.scales.x },
+      y: { ...baseOpts.scales.y, title: { display: true, text: 'G tokens/s', color: TICK, font: { family: "'IBM Plex Mono'", size: 11 } } },
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "timestamp": "2026-03-17T20:10:52.527956",
+    "gpu": {
+      "name": "NVIDIA A800 80GB PCIe",
+      "memory_gb": 85.09,
+      "cuda": "12.4",
+      "torch": "2.5.1+cu124"
+    },
+    "config": {
+      "batch_size": 1,
+      "seq_len": [
+        512,
+        1024,
+        2048,
+        4096,
+        16384
+      ],
+      "dim": 1024,
+      "num_heads": 16,
+      "warmup": 5,
+      "runs": 20,
+      "dtype": "fp16",
+      "out": "results"
+    }
+  },
+  "results": [
+    {
+      "seq_len": 512,
+      "naive_latency_ms": 0.10137600041925907,
+      "sdpa_latency_ms": 0.04761600065976381,
+      "flash_latency_ms": 0.12052480094134807,
+      "naive_mem_extra": 17.0,
+      "sdpa_mem_extra": 2.0,
+      "flash_mem_extra": 2.03125,
+      "naive_mem_peak": 30539776,
+      "sdpa_mem_peak": 14811136,
+      "flash_mem_peak": 14843904,
+      "flash_speedup_vs_naive": 0.8411214922362117,
+      "flash_speedup_vs_sdpa": 0.39507221989053987,
+      "naive_throughput_tokens_s": 5050505.029617759,
+      "sdpa_throughput_tokens_s": 10752688.023054551,
+      "flash_throughput_tokens_s": 4248088.327058583
+    },
+    {
+      "seq_len": 1024,
+      "naive_latency_ms": 0.24463360235095025,
+      "sdpa_latency_ms": 0.1006592020392418,
+      "flash_latency_ms": 0.12789760194718838,
+      "naive_mem_extra": 66.0,
+      "sdpa_mem_extra": 4.0,
+      "flash_mem_extra": 4.0625,
+      "naive_mem_peak": 86114304,
+      "sdpa_mem_peak": 21102592,
+      "flash_mem_peak": 21168128,
+      "flash_speedup_vs_naive": 1.9127301734082913,
+      "flash_speedup_vs_sdpa": 0.7870296276610886,
+      "naive_throughput_tokens_s": 4185851.7806191416,
+      "sdpa_throughput_tokens_s": 10172939.77356184,
+      "flash_throughput_tokens_s": 8006405.002205054
+    },
+    {
+      "seq_len": 2048,
+      "naive_latency_ms": 1.0545152068138122,
+      "sdpa_latency_ms": 0.15467520132660867,
+      "flash_latency_ms": 0.2243071973323822,
+      "naive_mem_extra": 260.0,
+      "sdpa_mem_extra": 8.0,
+      "flash_mem_extra": 8.125,
+      "naive_mem_peak": 297926656,
+      "sdpa_mem_peak": 33685504,
+      "flash_mem_peak": 33816576,
+      "flash_speedup_vs_naive": 4.701209855746241,
+      "flash_speedup_vs_sdpa": 0.6895686057608233,
+      "naive_throughput_tokens_s": 1942124.6718555856,
+      "sdpa_throughput_tokens_s": 13240648.678229224,
+      "flash_throughput_tokens_s": 9130335.648415415
+    },
+    {
+      "seq_len": 4096,
+      "naive_latency_ms": 2.86981121301651,
+      "sdpa_latency_ms": 0.4535295993089676,
+      "flash_latency_ms": 0.6668799906969071,
+      "naive_mem_extra": 1032.0,
+      "sdpa_mem_extra": 16.0,
+      "flash_mem_extra": 16.25,
+      "naive_mem_peak": 1124204544,
+      "sdpa_mem_peak": 58851328,
+      "flash_mem_peak": 59113472,
+      "flash_speedup_vs_naive": 4.303339810836853,
+      "flash_speedup_vs_sdpa": 0.6800767838828351,
+      "naive_throughput_tokens_s": 1427271.5854694222,
+      "sdpa_throughput_tokens_s": 9031384.073368043,
+      "flash_throughput_tokens_s": 6142034.634626797
+    },
+    {
+      "seq_len": 16384,
+      "naive_latency_ms": 38.39482879638672,
+      "sdpa_latency_ms": 6.555699205398559,
+      "flash_latency_ms": 9.11969289779663,
+      "naive_mem_extra": 16416.0,
+      "sdpa_mem_extra": 64.0,
+      "flash_mem_extra": 65.0,
+      "naive_mem_peak": 17356161024,
+      "sdpa_mem_peak": 209846272,
+      "flash_mem_peak": 210894848,
+      "flash_speedup_vs_naive": 4.210101066633848,
+      "flash_speedup_vs_sdpa": 0.7188508734743089,
+      "naive_throughput_tokens_s": 426724.13222329237,
+      "sdpa_throughput_tokens_s": 2499199.473110042,
+      "flash_throughput_tokens_s": 1796551.7242316862
+    }
+  ]
+}
